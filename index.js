@@ -14,9 +14,17 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
     try {
+        const categories = client.db('pcTreasure').collection('categories');
         const graphicsCardsCollection = client.db('pcTreasure').collection('graphicsCard');
         const mouseCollection = client.db('pcTreasure').collection('mouse');
         const ramCollection = client.db('pcTreasure').collection('ram');
+
+
+        app.get('/categories', async (req, res) => {
+            const query = {};
+            const categories = await categories.find(query).toArray();
+            res.send(categories);
+        })
 
         app.get('/graphicscards', async (req, res) => {
             const query = {};
@@ -35,6 +43,7 @@ async function run() {
             const rams = await ramCollection.find(query).toArray();
             res.send(rams);
         })
+
     }
     finally {
 
