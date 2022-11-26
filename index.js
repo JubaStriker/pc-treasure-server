@@ -16,12 +16,30 @@ async function run() {
     try {
         const productsCollection = client.db('pcTreasure').collection('products');
         const bookingsCollection = client.db('pcTreasure').collection('bookings');
-        const categoriesCollection = client.db('pcTreasure').collection('categories');
-        const graphicsCardsCollection = client.db('pcTreasure').collection('graphicsCard');
-        const mouseCollection = client.db('pcTreasure').collection('mouse');
-        const ramCollection = client.db('pcTreasure').collection('ram');
         const usersCollection = client.db('pcTreasure').collection('users');
+        const allProductsCollection = client.db('pcTreasure').collection('allProducts');
 
+
+
+        app.get('/allproducts', async (req, res) => {
+            const query = {};
+            const products = await allProductsCollection.find(query).toArray();
+            res.send(products);
+        })
+
+        app.get('/allproducts/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { category: id };
+            const category = await allProductsCollection.find(query).toArray();
+            res.send(category);
+        })
+
+        app.post('/allproducts', async (req, res) => {
+            const product = req.body;
+            console.log(product);
+            const result = await allProductsCollection.insertOne(product);
+            res.send(result);
+        })
 
         app.get('/products', async (req, res) => {
             const query = {};
@@ -36,26 +54,25 @@ async function run() {
             res.send(category);
         })
 
-        app.get('/graphicscards', async (req, res) => {
-            const query = {};
-            const graphicsCards = await graphicsCardsCollection.find(query).toArray();
-            res.send(graphicsCards);
-        })
 
-        app.get('/mouses', async (req, res) => {
-            const query = {};
-            const mouses = await mouseCollection.find(query).toArray();
-            res.send(mouses);
-        })
-
-        app.get('/rams', async (req, res) => {
-            const query = {};
-            const rams = await ramCollection.find(query).toArray();
-            res.send(rams);
-        })
 
         app.post('/users', async (req, res) => {
             const user = req.body;
+            const result = usersCollection.insertOne(user);
+            res.send(result);
+        })
+
+        app.post('/gusers', async (req, res) => {
+            const user = req.body;
+            const query = {
+                email: user.email
+            }
+
+            const alreadyUser = await usersCollection.find(query).toArray();
+            if (alreadyUser.length) {
+                const message = 'Account already exists'
+                return res.send({ acknowledged: false, message: message })
+            }
             const result = usersCollection.insertOne(user);
             res.send(result);
         })
@@ -76,6 +93,13 @@ async function run() {
 
             const result = await bookingsCollection.insertOne(booking)
             res.send(result)
+        })
+
+        app.get('/bookings', async (req, res) => {
+            const email = req.query.email
+            const query = { email: email }
+            const bookings = await bookingsCollection.find(query).toArray();
+            res.send(bookings)
         })
 
 
