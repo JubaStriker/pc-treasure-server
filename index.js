@@ -41,6 +41,13 @@ async function run() {
             res.send(result);
         })
 
+        app.delete('/myproducts/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) }
+            const result = await allProductsCollection.deleteOne(filter)
+            res.send(result)
+        })
+
         app.post('/allproducts', async (req, res) => {
             const product = req.body;
             const result = await allProductsCollection.insertOne(product);
@@ -74,6 +81,12 @@ async function run() {
             }
             const result = await advertisementsCollection.insertOne(products);
             res.send(result);
+        })
+
+        app.get('/advertisement', async (req, res) => {
+            const query = {};
+            const advertisements = await advertisementsCollection.find(query).toArray();
+            res.send(advertisements);
         })
 
 
