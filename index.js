@@ -18,7 +18,7 @@ async function run() {
         const bookingsCollection = client.db('pcTreasure').collection('bookings');
         const usersCollection = client.db('pcTreasure').collection('users');
         const allProductsCollection = client.db('pcTreasure').collection('allProducts');
-
+        const advertisementsCollection = client.db('pcTreasure').collection('advertisement');
 
 
         app.get('/allproducts', async (req, res) => {
@@ -34,9 +34,15 @@ async function run() {
             res.send(category);
         })
 
+        app.get('/myproducts', async (req, res) => {
+            const email = req.query.email;
+            const query = { sellerEmail: email }
+            const result = await allProductsCollection.find(query).toArray();
+            res.send(result);
+        })
+
         app.post('/allproducts', async (req, res) => {
             const product = req.body;
-            console.log(product);
             const result = await allProductsCollection.insertOne(product);
             res.send(result);
         })
@@ -52,6 +58,22 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const category = await productsCollection.find(query).toArray();
             res.send(category);
+        })
+
+        app.post('/advertisement', async (req, res) => {
+            const products = req.body;
+            console.log(products);
+            const query = {
+                name: products.name,
+                sellerEmail: products.sellerEmail
+            };
+            const alreadyAdvertised = await advertisementsCollection.find(query).toArray();
+            if (alreadyAdvertised.length) {
+                const message = 'Product already advertised'
+                return res.send({ acknowledged: false, message: message })
+            }
+            const result = await advertisementsCollection.insertOne(products);
+            res.send(result);
         })
 
 
@@ -70,7 +92,7 @@ async function run() {
 
             const alreadyUser = await usersCollection.find(query).toArray();
             if (alreadyUser.length) {
-                const message = 'Account already exists'
+                const message = 'Items already advertised'
                 return res.send({ acknowledged: false, message: message })
             }
             const result = usersCollection.insertOne(user);
@@ -100,6 +122,12 @@ async function run() {
             const query = { email: email }
             const bookings = await bookingsCollection.find(query).toArray();
             res.send(bookings)
+        })
+        app.delete('/bookings/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) }
+            const result = await bookingsCollection.deleteOne(filter)
+            res.send(result)
         })
 
 
