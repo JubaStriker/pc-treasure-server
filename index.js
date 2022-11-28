@@ -69,7 +69,6 @@ async function run() {
 
         app.post('/advertisement', async (req, res) => {
             const products = req.body;
-            console.log(products);
             const query = {
                 name: products.name,
                 sellerEmail: products.sellerEmail
@@ -89,6 +88,26 @@ async function run() {
             res.send(advertisements);
         })
 
+        app.delete('/advertisement/:name', async (req, res) => {
+            const email = req.query.email;
+            const name = req.params.name;
+            const query = { name: name, sellerEmail: email };
+            const result = await advertisementsCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const users = await usersCollection.find(query).toArray();
+            res.send(users);
+        })
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) }
+            const result = await usersCollection.deleteOne(filter)
+            res.send(result)
+        })
 
 
         app.post('/users', async (req, res) => {
@@ -111,6 +130,21 @@ async function run() {
             const result = usersCollection.insertOne(user);
             res.send(result);
         })
+
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.role === 'Seller' })
+        })
+
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            res.send({ isAdmin: user?.role === 'Admin' })
+        })
+
 
 
         app.post('/bookings', async (req, res) => {
