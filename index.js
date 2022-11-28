@@ -19,6 +19,7 @@ async function run() {
         const usersCollection = client.db('pcTreasure').collection('users');
         const allProductsCollection = client.db('pcTreasure').collection('allProducts');
         const advertisementsCollection = client.db('pcTreasure').collection('advertisement');
+        const wishlistsCollection = client.db('pcTreasure').collection('wishlist');
 
 
         app.get('/allproducts', async (req, res) => {
@@ -145,6 +146,38 @@ async function run() {
             res.send({ isAdmin: user?.role === 'Admin' })
         })
 
+        app.get('/users/verification/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            res.send({ isVerified: user?.isVerified === "true" })
+        })
+
+        app.put('/users/verification/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    isVerified: "true"
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options)
+            res.send(result);
+        })
+
+        app.post('/wishlist', async (req, res) => {
+            const product = req.body;
+            const result = await wishlistsCollection.insertOne(product);
+            res.send(result);
+        })
+
+        app.get('/wishlist/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { userEmail: email };
+            const result = await wishlistsCollection.find(query).toArray();
+            res.send(result);
+        })
 
 
         app.post('/bookings', async (req, res) => {
